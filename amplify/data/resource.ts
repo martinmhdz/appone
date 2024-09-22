@@ -1,5 +1,5 @@
+
 import { generateClient } from "aws-amplify/data";
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import type { Schema } from "@/amplify/data/resource";
 
 const client = generateClient<Schema>()
