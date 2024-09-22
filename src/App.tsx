@@ -1,68 +1,66 @@
 
+import { useEffect, useState } from 'react';
+import { PubSub } from '@aws-amplify/pubsub';
+import '@aws-amplify/ui-react/styles.css';
+import './App.css';
+import { withAuthenticator } from '@aws-amplify/ui-react';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
-import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-import { Authenticator } from '@aws-amplify/ui-react'
-import '@aws-amplify/ui-react/styles.css'
+const pubsub = new PubSub({
+  endpoint: 'wss://a2rpxp8igt30g1-ats.iot.us-east-1.amazonaws.com/mqtt',
+  region: 'us-east-1',
+});
 
-
-const client = generateClient<Schema>();
-
+pubsub.subscribe({ topics: 'myTopic' }).subscribe({
+  next: (data) => console.log('Message received', data),
+  error: (error) => console.error(error),
+  complete: () => console.log('Done')
+});
 
 function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
+    console.log('Publishing ', count);
+    pubsub
+      .publish({
+        topics: 'hola',
+        message: { msg: `Hello ${count}` },
+      })
+      .catch((err) => console.error(err));
+  }, [count]);
+
+  useEffect(() => {
+    fetchAuthSession().then((info) => {
+      console.log(info.identityId);
     });
+    // This triggers the connection to the AWS IoT MQTT broker
+    pubsub.subscribe({ topics: [] }).subscribe({});
+
   }, []);
-
-  function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
-  }
-
-    
-  function deleteTodo(id: string) {
-    client.models.Todo.delete({ id })
-  }
-
     
 
   
-  
-  return (
-        
-    <Authenticator>
-            {({ signOut, user }) => (
-    <main>
-                <h1>{user?.signInDetails?.loginId}'s todos</h1>
-                
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li 
-          onClick={() => deleteTodo(todo.id)}
-          key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
+   return (
+    <>
       <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button
+          onClick={async () => {
+            setCount((count) => count + 1);
+          }}
+        >
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
       </div>
-      <button onClick={signOut}>Sign out</button>
-    </main>
-        
-      )}
-      </Authenticator>
-      
+      </div>
+    </>
   );
- 
-  
 }
 
-export default App;
+
+export default withAuthenticator(App);
