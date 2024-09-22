@@ -5,11 +5,16 @@ import '@aws-amplify/ui-react/styles.css';
 import './App.css';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import { fetchAuthSession } from 'aws-amplify/auth';
+import { Amplify} from 'aws-amplify';
 
+
+// Apply plugin with configuration
 const pubsub = new PubSub({
-  endpoint: 'wss://a2rpxp8igt30g1-ats.iot.us-east-1.amazonaws.com/mqtt',
   region: 'us-east-1',
+  endpoint:
+    'wss://a2rpxp8igt30g1-ats.iot.us-east-1.amazonaws.com/mqtt'
 });
+
 
 pubsub.subscribe({ topics: 'myTopic' }).subscribe({
   next: (data) => console.log('Message received', data),
