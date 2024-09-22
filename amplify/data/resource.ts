@@ -1,4 +1,8 @@
+
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { generateClient } from "aws-amplify/data";
+
+const client = generateClient<Schema>()
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,11 +11,10 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a.model({
+  Todo: a
+    .model({
       content: a.string(),
-    
-  }).authorization(allow => [allow.owner()]),
-    ///.authorization((allow) => [allow.publicApiKey()]),
+    }).authorization(allow => [allow.owner()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,11 +22,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    ///defaultAuthorizationMode: "apiKey",
-    // API Key is used for a.allow.public() rules
-    ///apiKeyAuthorizationMode: {
-      ////expiresInDays: 30,
-      defaultAuthorizationMode: 'userPool',
+    defaultAuthorizationMode: 'userPool',
     
   },
 });
